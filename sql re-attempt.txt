@@ -1,0 +1,35 @@
+-- (northwind database)
+-- On which day of the month are the most *orders* being placed (use only the 2 most recent years of data)?
+-- which day has the lowest number of orders? Are you suprised? Why would this day have the least?
+
+
+with order_info_days AS (
+	SELECT extract(year from orders.order_date) as year,
+	extract(day from orders.order_date) as day_of_month, order_details.order_id
+	FROM orders inner join order_details on orders.order_id = order_details.order_id)
+	
+SELECT count (distinct order_id) as qty_orders, day_of_month from order_info_days
+WHERE year IN (SELECT DISTINCT year FROM order_info_days ORDER BY year DESC LIMIT 2)
+GROUP BY day_of_month
+ORDER BY day_of_month;
+
+
+-- On which day of the WEEK are the most *orders* being placed (use only the most recent year of data)?
+-- What can you say about any trends in orders being placed? 
+
+
+
+
+with order_info_week AS (
+	SELECT extract(year from orders.order_date) as year,
+	to_char(orders.order_date, 'day') as day, order_details.order_id
+	FROM orders inner join order_details on orders.order_id = order_details.order_id)
+	
+SELECT count (distinct order_id) as qty_orders, day from order_info_week 
+WHERE year IN (SELECT max(year) from order_info_week)
+GROUP by day
+ORDER by qty_orders;
+
+--How out of date is this database (ie the last order compared to today's date)
+
+SELECT age(max(orders.order_date)) from orders;

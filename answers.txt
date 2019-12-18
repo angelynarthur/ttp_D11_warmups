@@ -1,0 +1,50 @@
+-- On which day of the month are the most *orders* being placed (use only the 2 most recent years of data)?
+-- which day has the lowest number of orders? Are you suprised? Why would this day have the least?
+-- (ANS: day 31 only appears in 7 months out of the year, so it makes sense that it'd register as about half the sales)
+WITH order_info as (
+SELECT *,
+	date_part('year',order_date) as year,
+	date_part('day',order_date) as day,
+	o.order_id as o_order_id
+FROM orders as o
+	JOIN order_details as od ON o.order_id = od.order_id
+)
+SELECT 
+	COUNT(DISTINCT o_order_id) as qty_orders,
+	day as day_of_the_month
+FROM order_info
+WHERE year IN (SELECT DISTINCT year FROM order_info ORDER BY year DESC LIMIT 2)
+GROUP BY day
+ORDER BY day;
+
+
+
+
+
+-- On which day of the WEEK are the most *orders* being placed (use only the most recent year of data)?
+-- What can you say about any trends in orders being placed? 
+WITH order_info as (
+SELECT *,
+	date_part('year',order_date) as year,
+	to_char(order_date, 'Day') as day,
+	o.order_id as o_order_id
+FROM orders as o
+	JOIN order_details as od ON o.order_id = od.order_id
+)
+SELECT 
+	COUNT(DISTINCT o_order_id) as qty_orders,
+	day
+FROM order_info
+WHERE year IN (SELECT DISTINCT year FROM order_info ORDER BY year DESC LIMIT 1)
+GROUP BY day
+ORDER BY qty_orders;
+
+
+
+
+
+
+
+--How out of date is this database (ie the last order compared to today's date)
+SELECT age(MAX(order_date)) FROM orders;
+SELECT date_part('day', now() - MAX(order_date)) as days FROM orders;
